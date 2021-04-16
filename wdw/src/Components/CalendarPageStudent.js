@@ -16,6 +16,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 //For contecting to our backend
 import axios from 'axios';
+import SubjectSelectorStudent from './SubjectSelectorStudent';
 
 export const CalendarPageStudent = () => {
   //handles opening and closing dialog 1
@@ -27,7 +28,26 @@ export const CalendarPageStudent = () => {
   const [userPermissionNumber, setUserPermissionNumber] = useState("");
   let [correctPermissionCode, setCorrectPermissionCode] = useState(false);
   let [classExistsAlready, setClassExistsAlready] = useState(false);
+  const [subjectList, setSubjectList] = useState([]);
+  const [addSubject, setAddSubject] = useState(false);
+
+  useEffect(async () => {
+    await axios.get('http://localhost:5000/users/courses', {withCredentials: true})
+      .then(res => {
+        //console.log(res.data)
+        setSubjectList(res.data);
+      })
+      .catch(err => {
+        console.log(err);
+      });
   
+    // loadSubjects();
+  }, []);
+
+  useEffect(() => {
+    loadSubjects();
+  }, [addSubject]);
+
   const handleClickOpenAddClass = () => {
     setOpenAddClass(true);
   };
@@ -90,13 +110,17 @@ export const CalendarPageStudent = () => {
           //check for all conditions to add a class
           if((emptyClassList || !alreadyExists) && correctPermissionNumber)
           {
-              axios.post('http://localhost:5000/users/add-course', 
-              {
-                deptCode: userDeptCode.toUpperCase(),
-                courseNumber: userCourseNumber,
-                courseTitle: foundCourseName,
-                permissionNumber: userPermissionNumber
-              }, {withCredentials: true})
+            const course = {
+              deptCode: userDeptCode.toUpperCase(),
+              courseNumber: userCourseNumber,
+              courseTitle: foundCourseName,
+              permissionNumber: userPermissionNumber
+            }
+
+            subjectList.push(course);
+
+            axios.post('http://localhost:5000/users/add-course', 
+              course, {withCredentials: true})
               .then(res => {
                 console.log(res);
               })
@@ -104,6 +128,9 @@ export const CalendarPageStudent = () => {
                 console.log(err);
               });
               alert('Class added to your calendar!');
+
+              setAddSubject(!addSubject);
+
               handleCloseAddClass();
           }
           else if(!correctPermissionNumber)
@@ -121,34 +148,26 @@ export const CalendarPageStudent = () => {
       }).catch((err) => {
           console.log(err);
       });
+      
     }
   };
 
-
   //returns the subject cards on the left side of calendar
   const loadSubjects = () => {
+    console.log("load subjects", subjectList)
 
-    return (
-      <div>
-        <Card style={{ height: "100px" }}>
-          {SubjectSelector("Science")}
-        </Card>
-        <Card style={{ height: "100px" }}>
-          {SubjectSelector("Math")}
-        </Card>
-        <Card style={{ height: "100px" }}>
-          {SubjectSelector("English")}
-        </Card >
-        <Card style={{ height: "100px" }}>
-          {SubjectSelector("History")}
-        </Card>
-
-        {/* will use stuff below once info is loaded from backend */}
-        {/* {classes.map(item => {
-           return <Card style={{ height: "100px" }}>{SubjectSelector(item)}</Card>;
-        })} */}
-      </div>
-    )
+    //check if list if empty
+    if (subjectList != []) {
+      return (
+        <div>
+          {subjectList.map(item => {
+            //const permNum = item.permissionNumber;
+            const name = item.deptCode + " " + item.courseNumber + ": " + item.courseTitle;
+            return <div><SubjectSelectorStudent name={name}/></div>
+          })}
+        </div>
+      )
+    }
   }
 
   return (

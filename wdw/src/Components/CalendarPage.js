@@ -36,7 +36,7 @@ export const CalendarPage = () => {
   const [userStartDate, setUserStartDate] = useState("");
   const [userEndDate, setUserEndDate] = useState("");
   const [generatedPermissionNumber, setGeneratedPermissionNumber] = useState(0);
-  const [subjectList, setSubjectList] = useState([])
+  const [subjectList, setSubjectList] = useState([]);
   const [addSubject, setAddSubject] = useState(false);
   
 
@@ -55,7 +55,7 @@ export const CalendarPage = () => {
 
   useEffect(() => {
     loadSubjects();
-  }, [addSubject])
+  }, [addSubject]);
   
   const handleClickOpen = () => {
     setOpen(true);
