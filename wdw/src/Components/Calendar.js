@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import Paper from '@material-ui/core/Paper';
 import { Route, Switch } from 'react-router-dom';
 import Home from './Home';
@@ -66,45 +66,73 @@ today = yyyy + '-' + mm + '-' + dd;
 
 
 
-export default class Calendar extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    this.state = {
-      data: null,
-      currentDate: today,
-      eventList : [],
-      resources: [
-        {
-          fieldName: 'class',
-          title: 'Class',
-          // instances: [{id: 'EECS 125', text: 'EECS 125', color: '#d01235'}],
-          // instances: this.props,
-        }
-      ]
-    };
+export const Calendar = () => {
+  const [data, setData] = useState(null);
+  const [currentDate, setCurrentDate] = useState(today);
+  const [eventList, setEventList] = useState([{ startDate: today, endDate: today, title: 'Meeting' }]);
+  const [resources, setResources] = useState([
+    {
+      fieldName: 'class',
+      title: 'Class',
+      // instances: [{id: 'EECS 125', text: 'EECS 125', color: '#d01235'}],
+      // instances: this.props,
+    }
+  ]);
 
-    this.commitChanges = this.commitChanges.bind(this);
-  }
-
-  commitChanges({ added, changed, deleted }) {
-    this.setState((state) => {
-      let { data } = state;
-      if (added) {
-        const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
-        data = [...data, { id: startingAddedId, ...added }];
-      }
-      if (changed) {
-        data = data.map(appointment => (
-          changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment));
-      }
-      if (deleted !== undefined) {
-        data = data.filter(appointment => appointment.id !== deleted);
-      }
-      return { data };
-    });
+  const commitChanges = ({ added, changed, deleted }) => {
+    // this.setState((state) => {
+    //   let { data } = state;
+    //   if (added) {
+    //     const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
+    //     data = [...data, { id: startingAddedId, ...added }];
+    //   }
+    //   if (changed) {
+    //     data = data.map(appointment => (
+    //       changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment));
+    //   }
+    //   if (deleted !== undefined) {
+    //     data = data.filter(appointment => appointment.id !== deleted);
+    //   }
+    //   return { data };
+    // });
+    console.log("hi");
+    return data;
   }
   
-  getUserEvents = async () => {
+  // getUserEvents = async () => {
+  //   console.log('[Calendar.js: 108] entered getuserEvents')
+  //   await axios.get('http://localhost:5000/users/events', {withCredentials: true})
+  //     .then(res => {
+  //       console.log('[Calendar.js: 111] res: ' + JSON.stringify(res)); 
+  //       console.log('[Calendar.js: 112] res.data: ' + JSON.stringify(res.data)); 
+
+  //       let rawCourseDataList = res.data
+  //       let localList = []
+  //       for(let i = 0; i < rawCourseDataList.length; ++i)
+  //       {
+  //         if(rawCourseDataList[i] != null)
+  //         {
+  //           localList.push(
+  //             {
+  //               title: rawCourseDataList[i].title, 
+  //               startDate: new Date(2021, 4, 15, 10, 35),
+  //               endDate: new Date(2021, 4, 15, 14, 30),
+  //               id: 0,
+  //               class: 'EECS 645',
+  //             })
+  //         }
+  //       }
+
+  //       console.log('localList', localList)
+  //       this.setState((state, props) => ({eventList: localList}));
+  //       console.log('eventList', this.state.eventList)
+  //       return localList
+
+  //     })
+  //     .catch(err => {console.log('[Calendar.js: 139] got an error' + err)})
+  // }
+
+  useEffect(async () => {
     console.log('[Calendar.js: 108] entered getuserEvents')
     await axios.get('http://localhost:5000/users/events', {withCredentials: true})
       .then(res => {
@@ -129,91 +157,62 @@ export default class Calendar extends React.PureComponent {
         }
 
         console.log('localList', localList)
-        this.setState((state, props) => ({eventList: localList}));
-        console.log('eventList', this.state.eventList)
-        return localList
+        setEventList(localList);
 
       })
       .catch(err => {console.log('[Calendar.js: 139] got an error' + err)})
-  }
+  }, [])
 
-  // extractCourseList = (rawCourseDataList) => {
-  //   let courseList = []
-  //   console.log('[Calendar.js 142] raw course list: ' + JSON.stringify(rawCourseDataList))
-  
-  //   for(let i = 0; i < rawCourseDataList.length; ++i)
-  //   {
-  //     if(rawCourseDataList[i] != null)
-  //     {
-  //       courseList.push(
-  //         {
-  //           title: rawCourseDataList[i].title, 
-  //           startDate: new Date(2021, 4, 15, 10, 35),
-  //           endDate: new Date(2021, 4, 15, 14, 30),
-  //           id: 0,
-  //           class: 'EECS 645',
-  //         })
-  //     }
-  //   }
-  //   console.log('[Calendar.js 158] parsed course list: ' + JSON.stringify(courseList))
-  //   return courseList
+  useEffect(() => {
+    console.log(`Event list is ${JSON.stringify(eventList)}`);
+  }, [eventList])
+
+  // async componentDidMount() {
+  //   console.log('eventList before set', this.state.eventList)
+  //   let events = await this.getUserEvents()
+  //   console.log('eventList after set', events)
   // }
+  //const { currentDate, eventList } = this.state;
+  return (
+    <Paper>
+      
+      <Scheduler
+        data={eventList}
+        height={660}
+      >
+        <ViewState
+          defaultCurrentDate={currentDate}
+          defaultCurrentViewName="Week"
+        />
+        <EditingState
+          onCommitChanges={commitChanges}
+        />
+        <IntegratedEditing />
+        <DayView
+          startDayHour={9}
+          endDayHour={18}
+        />
+        <WeekView
+          startDayHour={10}
+          endDayHour={19}
+        />
+        <MonthView />
+        <Toolbar />
+        <DateNavigator />
+        <TodayButton />
+        <ViewSwitcher />
+        <ConfirmationDialog />
+        <Appointments />
+        <AppointmentTooltip
+          showOpenButton
+          showDeleteButton
+        />
+        <AppointmentForm />
 
-  async componentDidMount() {
-    console.log('eventList before set', this.state.eventList)
-    let events = await this.getUserEvents()
-    console.log('eventList after set', events)
-  }
-
-  render() {
-    console.log('[Calendar.js: 169] entered render')
-    //let renderList = this.getUserEvents();
-    
-    console.log('this.eventList', this.eventList)
-    
-    const { currentDate, eventList } = this.state;
-    console.log('[Calndar.js: 171] eventList2: ' + eventList)
-    // console.log('[Calndar.js: 177] first event title: ' + eventList[0].title)
-
-    return (
-      <Paper>
-        
-        <Scheduler
-          data={eventList}
-          height={660}
-        >
-          <ViewState
-            defaultCurrentDate={currentDate}
-            defaultCurrentViewName="Week"
-          />
-          <EditingState
-            onCommitChanges={this.commitChanges}
-          />
-          <IntegratedEditing />
-          <DayView
-            startDayHour={9}
-            endDayHour={18}
-          />
-          <WeekView
-            startDayHour={10}
-            endDayHour={19}
-          />
-          <MonthView />
-          <Toolbar />
-          <DateNavigator />
-          <TodayButton />
-          <ViewSwitcher />
-          <ConfirmationDialog />
-          <Appointments />
-          <AppointmentTooltip
-            showOpenButton
-            showDeleteButton
-          />
-          <AppointmentForm />
-
-          {/* <Resources field='Class' title='Class' name='Class' textField='Name' idField='PermissionNumber' colorField='Color' dataSource={resourceData}/> */}
-        </Scheduler>
-      </Paper>
-    );
-  }
+        {/* <Resources field='Class' title='Class' name='Class' textField='Name' idField='PermissionNumber' colorField='Color' dataSource={resourceData}/> */}
+      </Scheduler>
+    </Paper>
+  );
 }
+
+export default Calendar;
