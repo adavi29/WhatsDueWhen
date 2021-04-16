@@ -163,8 +163,10 @@ export const CalendarPage = () => {
       return (
         <div>
           {subjectList.map(item => {
-            const permNum = item.permissionNumber;
-            const name = item.deptCode + " " + item.courseNumber + ": " + item.courseTitle;
+            //const permNum = item.permissionNumber;
+            const permNum = 5;
+            //const name = item.deptCode + " " + item.courseNumber + ": " + item.courseTitle;
+            const name = "dummy_name"
             return <div><SubjectSelector name={name} permNum={permNum}/></div>
           })}
         </div>
