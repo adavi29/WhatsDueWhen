@@ -1,6 +1,7 @@
 const router = require('express').Router();
 
 let User = require('../models/user.model');
+let Course = require('../models/course.model')
 
 // get request for .../users/ info
 router.route('/').get((req, res) => {
@@ -108,6 +109,34 @@ router.route('/courses').get((req, res) => {
   } 
 
   return res.status(404).send();
+});
+
+router.route('/events').get(async (req, res) => {
+  const courseList = req.user.classList
+  let eventList = []
+  console.log('[users.js 117]: courseList: ' + JSON.stringify(courseList))
+
+  //for(course in courseList)
+  for(let i = 0; i < courseList.length; ++i)
+  {
+    if(courseList[i] != null)
+    {
+      await Course.findOne({deptCode: courseList[i].deptCode, courseNumber: courseList[i].courseNumber}, (err, course) => {
+        console.log('[users.js 121] course :' + JSON.stringify(course))
+        console.log('[users.js 122] deptCode :' + course.deptCode)
+        console.log('[users.js 123] courseNumber :' + course.courseNumber)
+        console.log('[users.js 125] event :' + course.eventList)
+
+        for(let i = 0; i < course.eventList.length; ++i)
+        {
+          eventList.push(course.eventList[i])
+        }
+      })
+    }
+  }
+
+  console.log('[users.js 134] returned event list :' + eventList)
+  res.json(eventList)
 });
 
 // req: {email: (users email)}
